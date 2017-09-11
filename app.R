@@ -4,11 +4,10 @@ james_packages <- c("shiny", "shinydashboard", "stringr", "R6")
 index_not_installed <- which(!is.element(james_packages, rownames(installed.packages())))
 if (length(index_not_installed)) install.packages(james_packages[index_not_installed])
 
-# setwd(getSrcDirectory(function(x) {x}))
-# print(getwd())
 library(shiny)
 library(shinydashboard)
 library(stringr)
+source("global.R")
 source("james-light.R")
 source("trivial.R")
 source("ui.R")
@@ -16,9 +15,6 @@ source("ui.R")
 # Init
 j_init(file_name = "trivial.cpb", active_scenario = "dev", active_project = "kcep2017")
 if (!dir.exists("www/downloads")) dir.create("www/downloads")
-
-# General functions
-get_settings <- function() j_get(type = "settings", scenario = "figures", project = "cpb", what = "data")
 
 ui <- dashboardPage(header, sidebar, body, skin = "green")
 
