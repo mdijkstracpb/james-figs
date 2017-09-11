@@ -1,4 +1,9 @@
-rm(list = ls(all = T))
+#rm(list = ls(all = T))
+
+james_packages <- c("shiny", "shinydashboard", "stringr", "R6")
+index_not_installed <- which(!is.element(james_packages, rownames(installed.packages())))
+if (length(index_not_installed)) install.packages(james_packages[index_not_installed])
+
 library(shiny)
 library(shinydashboard)
 library(stringr)
