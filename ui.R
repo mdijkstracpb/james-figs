@@ -15,9 +15,10 @@ header <- dashboardHeader(title = list(tags$img(src='www/james-logo.png', height
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("Import", tabName = "import", icon = icon("file-excel-o")),
-    menuItem("Figures", tabName = "figure", icon = icon("bar-chart"), selected = TRUE), #, badgeLabel = "To do", badgeColor = "orange"),
+    menuItem("Figures", tabName = "figure", icon = icon("bar-chart"), selected = TRUE),
     menuItem("Settings", tabName = "settings", icon = icon("dashboard")),
-    menuItem("Instructions", tabName = "instructions", icon = icon("lightbulb-o"))
+    menuItem("Instructions", tabName = "instructions", icon = icon("lightbulb-o")),
+    menuItem("Roadmap", tabName = "roadmap", icon = icon("road"), badgeLabel = "temp", badgeColor = "green")
   )
 )
 
@@ -82,10 +83,17 @@ body <- dashboardBody(
       h1("Instructions to authors"),
 
       h2("Data import"),
-      p("Please follow",  a("this example", href="www/data/kcep2017/data-figuren-decemberraming2016_james.xls"), "to structure your data in an Excel file before importing."),
+      p("Please follow",  a("this example", href="www/data/kcep2017/data-figuren-decemberraming2016_james.xls"), "to structure your data in an Excel file before importing.")
+    ),
+    tabItem(tabName = "roadmap",
+      h1("Time series figures made easy"),
+      p("First draft of a ", a("roadmap", href="http://tinyurl.com/roadmap-figuren", target = "_blank"), " (please edit)."),
+      h2("Figures in previously published documents"),
       
-      h2("Compare with previous"),
-      a("Example kMev", href="www/data/kcep2017/CPB-Policy-Brief-2016-15-Decemberraming-2016_0.pdf", target = "_blank")
+      tags$div(tags$ul(
+          tags$li(a("kMev2016 (decemberraming)", href="www/data/kcep2017/CPB-Policy-Brief-2016-15-Decemberraming-2016_0.pdf", target = "_blank")),
+          tags$li(tags$span("test2")),
+          tags$li(tags$span("test3"))))
     )
   )
 )
