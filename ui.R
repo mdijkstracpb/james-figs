@@ -1,4 +1,4 @@
-header <- dashboardHeader(title = list(tags$img(src='www/james-logo.png', height='50'), "JAMES"))
+header <- dashboardHeader(title = list(tags$img(src='www/james-logo.png', height='50'), "James"))
 # header$children[[2]]$children <-  tags$img(src='www/james-logo.png', height='50')
 # header$children[[3]]$children <- list(div(style="display: block;
 #     float: left;
@@ -14,7 +14,8 @@ header <- dashboardHeader(title = list(tags$img(src='www/james-logo.png', height
 
 sidebar <- dashboardSidebar(
   sidebarMenu(
-    menuItem("Figures", tabName = "figure", icon = icon("bar-chart")),
+    menuItem("Import", tabName = "import", icon = icon("file-excel-o")),
+    menuItem("Figures", tabName = "figure", icon = icon("bar-chart"), selected = TRUE), #, badgeLabel = "To do", badgeColor = "orange"),
     menuItem("Settings", tabName = "settings", icon = icon("dashboard")),
     menuItem("Instructions", tabName = "instructions", icon = icon("lightbulb-o"))
   )
@@ -22,6 +23,10 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
   tabItems(
+    tabItem(tabName = "import",
+      h1("Here you can import Excel"),
+      p("To do...")
+    ),
     tabItem(tabName = "figure",
       fluidRow(
         box(width = 4, title = tags$span(shiny::icon("database"), "Your data"), status = "primary", solidHeader = TRUE,
@@ -47,16 +52,9 @@ body <- dashboardBody(
             tabPanel("Barplot",
               selectInput("barplot_line_var", "Show as line:", c(None = "None", "To do" = "To do"))
             ),
-            tabPanel("Global settings",
-              uiOutput("settingsListDs")
-#               textInput("", "", placeholder = ""),
-#               textInput("", "", placeholder = ""),
-#               textInput("", "", placeholder = ""),
-#               textInput("", "", placeholder = ""),
-#               textInput("", "", placeholder = ""),
-#               textInput("", "", placeholder = ""),
-#               textInput("", "", placeholder = ""),
-#               textInput("", "", placeholder = ""),
+            tabPanel(id = "global_settings", "Global settings",
+              uiOutput("settingsListDs"),
+              actionButton("ApplyChanges3", "APPLY", icon("file-pdf-o"), style="color: #fff; background-color: #f39c12; border-color: #f39c12; float:right;")  
             )
           )
         ),

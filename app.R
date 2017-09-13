@@ -16,7 +16,7 @@ source("ui.R")
 j_init(file_name = "trivial.cpb", active_scenario = "dev", active_project = "kcep2017")
 if (!dir.exists("www/downloads")) dir.create("www/downloads")
 
-ui <- dashboardPage(header, sidebar, body, skin = "green")
+ui <- dashboardPage(title = "James (PROTOTYPE)", header, sidebar, body, skin = "green")
 
 addResourcePath("www", "www")
 server <- function(input, output, session) {
@@ -91,7 +91,7 @@ server <- function(input, output, session) {
       j_row <- j_ls()[row_number_selected, ]
 
       # First save the title
-      this_fig                <- j_get(index = j_row$index, what = "fig")
+      this_fig <- j_get(index = j_row$index, what = "fig")
       for (property in c("main", "xlab", "ylab", "future")) {
         this_fig$specs[[property]] <- input[[property]]
       }
@@ -103,6 +103,15 @@ server <- function(input, output, session) {
       # Last draw plot
       draw_all_plots(j_row)
     }
+  })
+  
+  observeEvent(input$ApplyChanges3, {
+    current_settings <- get_settings()
+    for (property in names(get_settings())) {
+      current_settings[[property]] <- as.vector(str_split(input[[property]], ",", simplify= TRUE))
+    }
+
+    j_put(x = current_settings, type = "settings", scenario = "figures", project = "cpb")
   })
 
   # If table is clicked:
@@ -125,11 +134,18 @@ server <- function(input, output, session) {
 
   # Desplay settings
   settingsList <- "<UL>"
+  textInput_concat <- tagList()
   for (i in seq_along(get_settings())) {
     settingsList <- paste(settingsList, "<LI><B>", names(get_settings())[i], ":</B> ", paste(get_settings()[[i]],collapse=", "), "</LI>", sep = "")
+    textInput_ID <- names(get_settings())[i]
+    textInput_Value <- paste(get_settings()[[i]], collapse = ",")
+    textInput_concat[[1 + length(textInput_concat)]] <- textInput(textInput_ID, textInput_ID, value = textInput_Value)
   }
   settingsList <- paste(settingsList, "</UL>")
-  output$settingsListDs <- renderUI(HTML(settingsList))
+  #output$settingsListDs <- renderUI(HTML(settingsList))
+  
+  # textInput_concat_test <- tagList(textInput("a", "b", value = "c"), textInput("d", "e", value = "f"))
+  output$settingsListDs <- renderUI({textInput_concat})
 }
 
 shinyApp(ui, server)
