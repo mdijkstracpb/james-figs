@@ -82,7 +82,7 @@ body <- dashboardBody(
       h1("Instructions to authors"),
 
       h2("Data import"),
-      p("Please use",  a("this example", href="www/data/kcep2017/data-figuren-decemberraming2016_james.xls"), "to structure your data in an Excel file before importing."),
+      p("Please follow",  a("this example", href="www/data/kcep2017/data-figuren-decemberraming2016_james.xls"), "to structure your data in an Excel file before importing."),
       
       h2("Compare with previous"),
       a("Example kMev", href="www/data/kcep2017/CPB-Policy-Brief-2016-15-Decemberraming-2016_0.pdf", target = "_blank")
