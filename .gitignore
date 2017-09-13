@@ -3,3 +3,6 @@
 .Rhistory
 www/downloads
 .Rproj.user
+log/
+*.cpb
+*.james
