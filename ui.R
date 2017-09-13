@@ -80,7 +80,8 @@ body <- dashboardBody(
     ),
     tabItem(tabName = "instructions",
       h1("Instructions to authors"),
-      p("Here DS can explain what to do / not to do...")
+      p("Here DS can explain what to do / not to do..."),
+      a("Example kMev", href="www/data/kcep2017/CPB-Policy-Brief-2016-15-Decemberraming-2016_0.pdf", "data-toggle" = "tab") 
     )
   )
 )
