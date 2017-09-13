@@ -80,8 +80,12 @@ body <- dashboardBody(
     ),
     tabItem(tabName = "instructions",
       h1("Instructions to authors"),
-      p("Here DS can explain what to do / not to do..."),
-      a("Example kMev", href="www/data/kcep2017/CPB-Policy-Brief-2016-15-Decemberraming-2016_0.pdf", "data-toggle" = "tab") 
+
+      h2("Data import"),
+      p("Please use",  a("this example", href="www/data/kcep2017/data-figuren-decemberraming2016_james.xls"), "to structure your data in an Excel file before importing."),
+      
+      h2("Compare with previous"),
+      a("Example kMev", href="www/data/kcep2017/CPB-Policy-Brief-2016-15-Decemberraming-2016_0.pdf", target = "_blank")
     )
   )
 )
