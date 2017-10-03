@@ -43,5 +43,5 @@ for (sheet_name in sheet_names) {
   # Convert to ts object
   tab_ts <- ts(data = tab, start = time_start, end = time_end, frequency = time_freq)
   
-  j_put(tab_ts, type = sheet_name, scenario = "dev", project = "kcep2017")
+  j_put(tab_ts, type = sheet_name, scenario = DEFAULT_SCENARIO, project = "kcep2017")
 }

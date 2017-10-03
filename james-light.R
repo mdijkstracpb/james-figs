@@ -28,6 +28,7 @@ JData <- R6Class("JData",
       self$project  <- project
       self$doc      <- doc
       self$fig      <- JFig$new()
+      self$born     <- date()
     },
     data     = NULL,
     version  = NULL,
@@ -35,7 +36,8 @@ JData <- R6Class("JData",
     scenario = NULL,
     project  = NULL,
     doc      = NULL,
-    fig      = NULL
+    fig      = NULL,
+    born     = NULL  # creation_date
   )
 )
 
@@ -77,12 +79,18 @@ j_init <- function(file_name = "data.cpb", active_scenario, active_project) {
   .j_root <<- JRoot$new(file_name, active_scenario, active_project)
 }
 
-j_ls <- function(type, version, scenario, project, collapsed = TRUE) {
-  df <- data.frame(stringsAsFactors = FALSE)
-  j = 1
+j_ls <- function(type, version, scenario, project, collapsed = TRUE, active_project_scenario_only = TRUE) {
+  if (active_project_scenario_only) {
+    if (missing(project))  project  <- .j_root$active_project
+    if (missing(scenario)) scenario <- .j_root$active_scenario
+  }
+  
+  # Filter on type, version, scenario, project
+  df <- data.frame(index = integer(), project = character(), scenario = character(), type = character(), version = character(), "dim|class" = character(), doc = character(), stringsAsFactors = FALSE)
+  colnames(df)[6] <- "dim|class" # Fixes dim.class
   for (i in seq_along(.j_root$data_lst)) {
     x <- .j_root$data_lst[[i]]
-    
+
     if (!missing(type)     && type != x$type)         next
     if (!missing(version)  && version != x$version)   next
     if (!missing(scenario) && scenario != x$scenario) next
@@ -92,6 +100,7 @@ j_ls <- function(type, version, scenario, project, collapsed = TRUE) {
     x_info <- paste(dim(x$data), collapse = "/")
     if ("" == x_info) x_info <- class(x_info)
 
+    j <- 1 + nrow(df)
     df[j, "index"]       <- i
     df[j, "project"]     <- x$project
     df[j, "scenario"]    <- x$scenario
@@ -99,45 +108,51 @@ j_ls <- function(type, version, scenario, project, collapsed = TRUE) {
     df[j, "version"]     <- x$version
     df[j, "dim|class"]   <- x_info
     df[j, "doc"]         <- x$doc
-
-    j <- 1 + j
   }
-  
-  # If "collapse", only keep most recent versions (of active project/scenario, if not specified)
-  if (collapsed) {
-    # Only show specified or active project/scenario
-    if (missing(project)) project <- .j_root$active_project
-    if (missing(scenario)) scenario <- .j_root$active_scenario
-    index_inactive <- which(df$project != .j_root$active_project | df$scenario != .j_root$active_scenario)
-    if (0 < length(index_inactive)) df <- df[-index_inactive, ]
-    # Only show most recent project
-    type_with_multiple_versions <- names(which(table(df$type) > 1))
-    for (type in type_with_multiple_versions) {
-      version_max <- max(df$version[df$type == type])
-      index <- which(df$type == type & df$version < version_max)
-      if (0 < length(index)) df <- df[-index, ]
+
+  # If "collapsed", filter most recent version per project/scenario/type
+  if (collapsed && 0 < nrow(df)) {
+    filter_cols <- c("project", "scenario", "type")
+    pst <- unique(df[, filter_cols])
+    for (i in 1:nrow(pst)) {
+      index <- NULL
+      for (j in 1:nrow(df)) if (all(df[j, filter_cols] == pst[i, ])) index <- c(index, j)
+      if (1 < length(index)) df <- df[-head(index, -1), ]
     }
   }
-  
   df
 }
 
-j_put <- function(x, type = "", doc = NA, scenario = .j_root$active_scenario, project = .j_root$active_project) {
-  index            <- which(type == j_ls()$type & scenario == j_ls()$scenario & project == j_ls()$project)
-  version          <- 1 + length(index)
-  jdata            <- JData$new(x, version, type, scenario, project, doc) # Create
-  .j_root$data_lst <- append(.j_root$data_lst, jdata) # Add
+j_put <- function(x, type = "", doc = NA, scenario = .j_root$active_scenario, project = .j_root$active_project, ignore_if_duplicate = TRUE, activate_project_scenario = TRUE) {
+  # First check if we really want to add x
+  x2_object <- j_get(type = type, scenario = scenario, project = project, what = "object")
+  add_x     <- !ignore_if_duplicate || is.null(x2_object)
+  if (!add_x) add_x <- !identical(x, x2_object$data) || !identical(doc, x2_object$doc)
+  
+  if (add_x) {
+    lst              <- j_ls(active_project_scenario_only = FALSE, collapsed = FALSE)
+    index            <- which(type == lst$type & scenario == lst$scenario & project == lst$project)
+    version          <- 1 + length(index) # New version
+    jdata            <- JData$new(x, version, type, scenario, project, doc) # Create
+    if (!is.null(x2_object)) {
+      jdata$fig <- x2_object$fig # Re-use fig settings
+      jdata$doc <- x2_object$doc # Re-use doc
+    }
+    .j_root$data_lst <- append(.j_root$data_lst, jdata) # Add    
+  }
   
   # Select that project and scenario
-  .j_root$active_project  <- project
-  .j_root$active_scenario <- scenario
+  if (activate_project_scenario) {
+    .j_root$active_project  <- project
+    .j_root$active_scenario <- scenario    
+  }
   
-  return(invisible(TRUE))
+  return(invisible(add_x))
 }
 
 j_get <- function(type, version, scenario = .j_root$active_scenario, project = .j_root$active_project, what = c("data", "fig", "object"), index) {
   if (missing(index)) {
-    j_table <- j_ls(collapsed = FALSE)
+    j_table <- j_ls(active_project_scenario_only = FALSE, collapsed = FALSE)
     if (missing(version)) { # take last
       index <- tail(which(type == j_table$type & scenario == j_table$scenario & project == j_table$project), 1)
     } else {
@@ -159,11 +174,38 @@ j_get <- function(type, version, scenario = .j_root$active_scenario, project = .
   return(if (0 == length(index)) NULL else if (get_fig) .j_root$data_lst[[index]]$fig else .j_root$data_lst[[index]]$data)
 }
 
+j_activate <- function(type, version, scenario = .j_root$active_scenario, project = .j_root$active_project, index) {
+  if (missing(index)) {
+    if (missing(version)) stop("Please specify either 'index' or 'version'.")
+    j_table <- j_ls(active_project_scenario_only = FALSE, collapsed = FALSE)
+    index   <- which(type == j_table$type & scenario == j_table$scenario & project == j_table$project & version == j_table$version)
+  }
+
+  n <- length(.j_root$data_lst)
+  .j_root$data_lst <- replace(.j_root$data_lst, c(index, n), c(.j_root$data_lst[n], .j_root$data_lst[index]))
+}
+
 j_save <- function() .j_root$save()
 
-###
-### Figure functions
-###
+
+# j_init(file_name = "trivial.cpb", active_scenario = DEFAULT_SCENARIO, active_project = "kcep2017")
+#
+# j_put(1, type = "a", project = "pa", scenario = "sa", ignore = F)
+# j_put(1, type = "a", project = "pa", scenario = "sb", ignore = F)
+# j_put(2, type = "a")
+# j_put(2, type = "a", ignore = F)
+# j_put(1, type = "a", project = "pb", scenario = "sb", ignore = F)
+#
+# j_ls()
+
+
+
+
+
+
+
+
+
 
 
 

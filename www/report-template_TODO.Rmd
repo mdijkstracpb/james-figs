@@ -1,0 +1,11 @@
+```{r, echo = FALSE, eval = TRUE, results = "asis"}
+  fig_name <- "www/downloads/kCEP 2018_dev_1.1a_line.pdf"
+  cat(paste0("\\includegraphics[width=", 235, "pt]{", fig_name, "}\n\n"))
+```
+
+for (i in 1:length(fig_lst)) {
+  fig_name <- names(fig_lst)[i]
+  cat(paste0("##Figure ", i, " (filename: ", fig_name, ")\n"))
+  fig_width <- length(fig_lst[[i]]) * 235
+  cat(paste0("\\includegraphics[width=", fig_width, "pt]{", fig_name, "}\n\n"))
+}
